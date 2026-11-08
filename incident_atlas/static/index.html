@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Incident Atlas · Evidence before action</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Incident Atlas home"
+        ><span class="brand-mark">a<span>↗</span></span
+        ><span>incident<br /><strong>atlas.</strong></span></a
+      >
+      <div class="workspace-label">RESPONSE WORKSPACE <span>01</span></div>
+      <nav aria-label="Workspace navigation">
+        <button class="nav-item active" data-page="console">
+          <span>⌘</span>Incident console<i>01</i>
+        </button>
+        <button class="nav-item" data-page="corpus">
+          <span>▤</span>Runbook library<i id="doc-count">—</i>
+        </button>
+        <button class="nav-item" data-page="evaluation">
+          <span>◫</span>Evaluation lab<i>03</i>
+        </button>
+        <button class="nav-item" data-page="history">
+          <span>↶</span>Run history<i>04</i>
+        </button>
+      </nav>
+      <div class="sidebar-note">
+        <span class="dot"></span>LOCAL WORKSPACE
+        <p>Evidence before action.<br />Every recovery is inspectable.</p>
+        <span class="mono">v0.1 / loopback only</span>
+      </div>
+    </aside>
+    <div class="shell">
+      <header class="topbar">
+        <div>
+          <span class="breadcrumb">Workspace</span><span class="slash">/</span
+          ><span id="page-label">Incident console</span>
+        </div>
+        <span class="connection"
+          ><span class="dot"></span
+          ><span id="connection-text">Connecting</span></span
+        >
+      </header>
+      <main>
+        <section id="page-console" class="page active">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">RETRIEVE. INSPECT. RECOVER.</p>
+              <h1>Make the next step<br />an informed one.</h1>
+              <p class="lede">
+                Investigate backend incidents with version-scoped runbooks<br
+                  class="desktop"
+                />
+                and a recovery trail you can actually inspect.
+              </p>
+            </div>
+            <div class="heading-stamp">
+              <span>ATLAS / 01</span>
+              <div class="stamp-art" aria-hidden="true">↗</div>
+              <span>INCIDENT RESPONSE</span>
+            </div>
+          </div>
+          <div class="notice">
+            <span class="notice-icon">i</span>
+            <div>
+              <strong>A safe place to investigate.</strong> The bundled runbooks
+              describe fictional services. Atlas retrieves evidence; it does not
+              inspect your live systems or execute fixes.
+            </div>
+          </div>
+          <div class="console-grid">
+            <div class="query-column">
+              <form id="query-form" class="card query-card">
+                <div class="card-top">
+                  <h2>Describe the incident</h2>
+                  <span class="step-number">01</span>
+                </div>
+                <div class="field-pair">
+                  <label>Service<select id="service" required></select></label
+                  ><label
+                    >Runbook version<select id="version" required></select
+                  ></label>
+                </div>
+                <label for="question">Symptoms or investigation question</label
+                ><textarea
+                  id="question"
+                  rows="5"
+                  maxlength="2000"
+                  required
+                  placeholder="What changed? Which symptom are you seeing?"
+                >
+How do I revert a bad deploy?</textarea
+                >
+                <div class="example-label">TRY A SCENARIO</div>
+                <div class="examples">
+                  <button type="button" data-example="deploy">
+                    Bad deployment ↗</button
+                  ><button type="button" data-example="pool">
+                    Pool exhaustion ↗</button
+                  ><button type="button" data-example="queue">
+                    Duplicate events ↗
+                  </button>
+                </div>
+                <label for="provider"
+                  >Evidence selection<select id="provider"></select
+                ></label>
+                <p class="field-hint" id="provider-hint">
+                  Local mode returns verbatim excerpts. No LLM or external
+                  request.
+                </p>
+                <div class="recovery-setting">
+                  <div>
+                    <strong>Retrieval recovery</strong>
+                    <p>
+                      Retry weak matches with aliases and spelling correction.
+                    </p>
+                  </div>
+                  <label class="switch"
+                    ><input
+                      type="checkbox"
+                      id="recovery"
+                      checked
+                      aria-label="Enable retrieval recovery" /><span></span
+                  ></label>
+                </div>
+                <div class="budget-row">
+                  <label for="attempts">Attempt limit</label
+                  ><select id="attempts">
+                    <option value="2">2 attempts</option>
+                    <option value="3">3 attempts</option></select
+                  ><span class="mono">30s budget</span>
+                </div>
+                <button type="submit" id="run-button" class="primary">
+                  Investigate incident <span>↗</span>
+                </button>
+                <p class="form-foot">
+                  Read-only assistance. Review every step before acting.
+                </p>
+              </form>
+              <div class="small-note">
+                <span>↳</span>
+                <p>
+                  <strong>What recovers?</strong> The retrieval pipeline. Atlas
+                  widens the search when its lexical coverage check finds gaps.
+                  Coverage is a diagnostic, not a truth score.
+                </p>
+              </div>
+            </div>
+            <div class="results-column">
+              <section
+                class="card result-card"
+                aria-labelledby="result-heading"
+              >
+                <div class="card-top">
+                  <h2 id="result-heading">Evidence & next checks</h2>
+                  <span id="result-status" class="badge neutral">Ready</span>
+                </div>
+                <div id="result-empty" class="empty-result">
+                  <div class="empty-art" aria-hidden="true">
+                    <span>▤</span><i>+</i><span>↗</span>
+                  </div>
+                  <h3>A clear trail starts here.</h3>
+                  <p>
+                    Run an investigation to see matching excerpts,<br />source
+                    citations, and each recovery decision.
+                  </p>
+                  <div class="empty-flow">
+                    <span>Retrieve</span><b>→</b><span>Assess</span><b>→</b
+                    ><span>Recover</span><b>→</b><span>Cite</span>
+                  </div>
+                </div>
+                <div id="result-content" hidden>
+                  <p id="result-reason" class="result-reason"></p>
+                  <div id="run-stats" class="run-stats"></div>
+                  <div id="claims"></div>
+                  <div id="evidence-footer" class="evidence-footer"></div>
+                  <button id="export-run" class="text-button" type="button">
+                    Download run JSON ↗
+                  </button>
+                </div>
+              </section>
+              <section class="card trace-card">
+                <div class="card-top">
+                  <h2>Execution trail</h2>
+                  <span class="mono" id="trace-label">AWAITING RUN</span>
+                </div>
+                <div id="trace">
+                  <div class="trace-placeholder">
+                    <span class="trace-dash"></span>Every executed stage will
+                    appear here.
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+        <section id="page-corpus" class="page">
+          <div class="page-heading compact">
+            <div>
+              <p class="eyebrow">THE SOURCE OF EVERY ANSWER</p>
+              <h1>Your runbook library.</h1>
+              <p class="lede">
+                Keep service and version boundaries explicit. Search aliases
+                help<br class="desktop" />
+                bridge incident language and runbook terminology.
+              </p>
+            </div>
+            <button id="seed-button" class="secondary">
+              Load demo runbooks ↗
+            </button>
+          </div>
+          <div class="notice">
+            <span class="notice-icon">i</span>
+            <div>
+              Use redacted runbooks. Uploaded text and run history are stored in
+              local SQLite. Selecting OpenAI sends the question and retrieved
+              passages to that provider.
+            </div>
+          </div>
+          <form id="upload-form" class="card upload-card">
+            <div class="card-top">
+              <h2>Add a runbook</h2>
+              <span class="mono">TXT / MD / PDF</span>
+            </div>
+            <div class="upload-grid">
+              <label
+                >Document<input
+                  type="file"
+                  id="upload-file"
+                  accept=".txt,.md,.pdf"
+                  required /></label
+              ><label
+                >Service<input
+                  id="upload-service"
+                  placeholder="e.g. checkout-api"
+                  maxlength="80"
+                  required /></label
+              ><label
+                >Version<input
+                  id="upload-version"
+                  placeholder="e.g. 1.2"
+                  maxlength="80"
+                  required
+              /></label>
+            </div>
+            <label
+              >Search aliases<input
+                id="upload-aliases"
+                placeholder="e.g. db saturated, connection checkout timeout"
+                maxlength="1000"
+            /></label>
+            <div class="upload-bottom">
+              <p class="field-hint">
+                Up to 8 MB. Text-based PDFs only; no OCR. No source file is
+                executed.
+              </p>
+              <button class="primary" type="submit">
+                Index runbook <span>+</span>
+              </button>
+            </div>
+          </form>
+          <div class="section-label">
+            <h2>Indexed documents</h2>
+            <span class="mono" id="library-count"></span>
+          </div>
+          <div id="document-list" class="document-grid"></div>
+        </section>
+        <section id="page-evaluation" class="page">
+          <div class="page-heading compact">
+            <div>
+              <p class="eyebrow">MEASURE THE RECOVERY</p>
+              <h1>Put both paths to the test.</h1>
+              <p class="lede">
+                The same 14 synthetic questions. The same version-scoped
+                corpus.<br class="desktop" />
+                Baseline retrieval versus bounded recovery.
+              </p>
+            </div>
+            <button id="evaluate-button" class="primary">
+              Run comparison <span>↗</span>
+            </button>
+          </div>
+          <div class="notice">
+            <span class="notice-icon">i</span>
+            <div>
+              <strong>Development fixtures, not production accuracy.</strong>
+              These checks measure expected source retrieval, citations, and
+              abstention. They do not prove a diagnosis is correct. Both paths
+              use local extractive mode.
+            </div>
+          </div>
+          <div id="eval-empty" class="card eval-empty">
+            <span class="eyebrow">NO SCORES WITHOUT A RUN</span>
+            <h3>Find out where recovery helps.</h3>
+            <p>
+              Run the comparison to inspect every test case.<br />The complete,
+              unmodified demo corpus is required.
+            </p>
+          </div>
+          <div id="eval-results" hidden>
+            <div id="metric-grid" class="metric-grid"></div>
+            <div class="card table-card">
+              <div class="card-top">
+                <h2>Case-by-case results</h2>
+                <button id="export-eval" class="text-button">
+                  Download results ↗
+                </button>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Incident question</th>
+                      <th>Scope</th>
+                      <th>Baseline</th>
+                      <th>Recovery</th>
+                      <th>Inspect</th>
+                    </tr>
+                  </thead>
+                  <tbody id="eval-cases"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="page-history" class="page">
+          <div class="page-heading compact">
+            <div>
+              <p class="eyebrow">LEAVE AN AUDIT TRAIL</p>
+              <h1>Revisit the evidence.</h1>
+              <p class="lede">
+                Saved runs retain the passages used at execution time,<br
+                  class="desktop"
+                />
+                even if a source document is later removed.
+              </p>
+            </div>
+            <button id="refresh-history" class="secondary">Refresh ↻</button>
+          </div>
+          <div class="card table-card">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Question</th>
+                    <th>Service / version</th>
+                    <th>Outcome</th>
+                    <th>When</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="history-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        <footer>
+          <span>INCIDENT ATLAS</span
+          ><span>Source-backed checks. Human decisions.</span
+          ><a
+            href="https://github.com/nischay1277/langgraph-nischay"
+            target="_blank"
+            rel="noreferrer"
+            >Project repository ↗</a
+          >
+        </footer>
+      </main>
+    </div>
+    <div id="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

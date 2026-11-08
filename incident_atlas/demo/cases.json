@@ -1,0 +1,16 @@
+[
+  {"id":"release-503","question":"What should I check for HTTP 503 after a release?","service":"atlas-api","version":"2.4","expected_titles":["Atlas API · release rollback"],"answerable":true},
+  {"id":"deploy-alias","question":"How do I revert a bad deploy?","service":"atlas-api","version":"2.4","expected_titles":["Atlas API · release rollback"],"answerable":true},
+  {"id":"database-pool","question":"How do I investigate connection pool exhaustion?","service":"atlas-api","version":"2.4","expected_titles":["Atlas API · connection pool exhaustion"],"answerable":true},
+  {"id":"database-alias","question":"What should I check for too many db clients?","service":"atlas-api","version":"2.4","expected_titles":["Atlas API · connection pool exhaustion"],"answerable":true},
+  {"id":"pool-typo","question":"How do I investigate conection pool exhuastion?","service":"atlas-api","version":"2.4","expected_titles":["Atlas API · connection pool exhaustion"],"answerable":true},
+  {"id":"timeout","question":"What should I check for gateway timeout and a slow upstream?","service":"atlas-api","version":"2.4","expected_titles":["Atlas API · gateway timeout diagnosis"],"answerable":true},
+  {"id":"secret","question":"What should I check for HTTP 401 after credential rotation?","service":"atlas-api","version":"2.4","expected_titles":["Atlas API · credential rotation"],"answerable":true},
+  {"id":"duplicate","question":"How should I investigate duplicate event delivery?","service":"ledger-worker","version":"3.1","expected_titles":["Ledger worker · duplicate delivery"],"answerable":true},
+  {"id":"twice","question":"Why are events arriving twice?","service":"ledger-worker","version":"3.1","expected_titles":["Ledger worker · duplicate delivery"],"answerable":true},
+  {"id":"deadletter","question":"What should I check for poison messages and dead-letter queue depth?","service":"ledger-worker","version":"3.1","expected_titles":["Ledger worker · poison messages"],"answerable":true},
+  {"id":"legacy","question":"What is the legacy rollback procedure?","service":"atlas-api","version":"1.8","expected_titles":["Atlas API · legacy rollback"],"answerable":true},
+  {"id":"unknown","question":"What is the Kubernetes cluster administrator password?","service":"atlas-api","version":"2.4","expected_titles":[],"answerable":false},
+  {"id":"wrong-version","question":"How do I investigate database connection pool exhaustion?","service":"atlas-api","version":"9.9","expected_titles":[],"answerable":false},
+  {"id":"unrelated","question":"What is the office cafeteria lunch menu?","service":"ledger-worker","version":"3.1","expected_titles":[],"answerable":false}
+]

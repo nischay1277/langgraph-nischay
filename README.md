@@ -1,93 +1,142 @@
-# LangGraph Experiments
+# Incident Atlas
 
-Notebook experiments covering typed state, sequential and conditional graphs, structured model output, and a retrieval-augmented assistant with a web-search fallback.
+**An inspectable incident-response evidence assistant for backend teams.**
 
-This repository is a learning workspace. It contains exploratory cells and incomplete examples rather than a packaged service, and running every notebook with **Run All** is not guaranteed to succeed.
+An engineer sees HTTP 503s after a release, pool checkout timeouts, or an event arriving twice.
+The relevant runbook may use different terminology or describe an older version of the service.
+Atlas isolates the correct service/version, retrieves evidence, retries weak lexical matches,
+and shows which passages and recovery decisions produced the result.
 
-## Notebooks
+This upgrades the original Self-RAG notebook into a runnable local application. The original
+notebooks remain unchanged; their setup and limitations are in [Notebook experiments](docs/NOTEBOOKS.md).
 
-| Notebook | What it explores |
-| --- | --- |
-| `workflows/1_workflow.ipynb` | A sequential graph calling a local Ollama model |
-| `workflows/2_worklow.ipynb` | Parallel cricket-statistic calculations and a summary node; includes unfinished calculations/state updates |
-| `workflows/3_workflow_essay_eval.ipynb` | Essay feedback and a bounded score using a Pydantic output schema |
-| `workflows/4_conditional_workflows.ipynb` | Structured sentiment classification with a conditional explanation branch |
-| `self_rag.ipynb` | Retrieval routing, per-passage relevance decisions, contextual generation, and web-search fallback |
+![Incident console](docs/screenshots/console-desktop.png)
 
-## Self-RAG workflow
+## Run locally
 
-```text
-Question -> decide whether retrieval is needed
-  -> no: generate from general model knowledge -> end
-  -> yes: FAISS retrieval -> evaluate passage relevance
-       -> relevant evidence: generate from context -> end
-       -> no relevant evidence: rewrite query -> Tavily web search
-            -> evaluate passage relevance again
-```
+Python 3.10 or newer. No API key or model download is needed for the default extractive mode.
 
-The notebook uses OpenAI `text-embedding-3-large` embeddings and `gpt-4o-mini` for generation and structured decisions. It reads three local PDF documents, splits them into 600-character chunks with 150-character overlap, and retrieves four FAISS candidates before relevance checks. These are the configurations in the checked-in notebook, not recommendations for a current model catalog.
-
-The relevance decision is a model judgment about retrieved passages. There is no independent answer-faithfulness benchmark or measured quality improvement included.
-
-## Setup
-
-Use Python 3.10 or newer and a dedicated environment. There is no pinned dependency manifest; this installation list is inferred from notebook imports and may require version adjustments, particularly for older LangChain integrations.
-
-```bash
+```powershell
 git clone https://github.com/nischay1277/langgraph-nischay.git
 cd langgraph-nischay
 python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.lock
+.\.venv\Scripts\python.exe -m incident_atlas
 ```
 
-Activate with `.\.venv\Scripts\Activate.ps1` in PowerShell or `source .venv/bin/activate` on macOS/Linux, then install:
+Open **http://127.0.0.1:8765**. On this checkout, double-click `start.bat` or run `./start.ps1`
+after setup. Press Ctrl+C to stop. On macOS/Linux, use `.venv/bin/python` in place of the
+Windows Python path. Run from the repository root, or install with `pip install -e .`.
 
-```bash
-python -m pip install jupyterlab ipykernel langgraph pydantic python-dotenv langchain-core langchain-community langchain-text-splitters langchain-openai langchain-ollama langchain-huggingface faiss-cpu pypdf tavily-python
-python -m ipykernel install --user --name langgraph-experiments --display-name "LangGraph Experiments"
-python -m jupyterlab
-```
+The first launch seeds seven synthetic runbooks for fictional Atlas API and Ledger worker
+services. Later launches preserve the workspace, including deleted documents. Use **Load demo
+runbooks** to restore missing examples. Local data lives in ignored `data/atlas.sqlite3`.
 
-Select the installed kernel and run cells in order. Open JupyterLab from the repository root so relative PDF and configuration paths resolve correctly.
+## What you can inspect
 
-### Local workflow notebooks
+| Workspace | Implemented behavior |
+| --- | --- |
+| Incident console | Service/version selection, baseline/recovery toggle, attempt budget, exact source quotes and executed-stage timeline |
+| Runbook library | UTF-8 TXT/Markdown and text-layer PDF uploads, aliases, content deduplication and document removal |
+| Evaluation lab | Paired baseline/recovery runs on 14 fixed synthetic cases; inspect either path for each case and export JSON |
+| Run history | Persistent query/configuration/evidence snapshots and downloadable run records |
 
-Install Ollama separately, start its local service, and pull the model named in the notebooks:
+Try **“How do I revert a bad deploy?”** under `atlas-api` / `2.4`, first without recovery and
+then with it. The recovery trail shows metadata aliases and wider retrieval. Try the
+misspelled **“How do I investigate conection pool exhuastion?”**, or select `ledger-worker` /
+`3.1` and ask **“Why are events arriving twice?”**. See the [five-minute demo](docs/DEMO.md).
 
-```bash
-ollama pull llama3.2
-```
-
-The workflow notebooks use `ChatOllama(model="llama3.2")`. Some cells also import Hugging Face wrappers or read `HF_TOKEN`; those imports do not mean that hosted Hugging Face inference is the active path.
-
-### Self-RAG prerequisites
-
-Create an untracked `.env` in the repository root:
-
-```dotenv
-OPENAI_API_KEY=replace_with_your_key
-TAVILY_API_KEY=replace_with_your_key
-```
-
-Do not commit credentials or sensitive documents. Hosted embeddings, model calls, and web search require appropriate account access and may incur charges.
-
-Supply these files locally; they are not included in the repository:
+## How the recovery works
 
 ```text
-documents/
-  Company_Policies.pdf
-  Company_Profile.pdf
-  Product_and_Pricing.pdf
+Question + service/version
+  -> BM25 retrieve -> lexical coverage assessment
+       -> sufficient: select evidence -> validate exact quotes -> publish excerpts
+       -> insufficient: aliases + spelling correction + wider retrieval -> reassess
+       -> no sufficient evidence within budget: abstain
 ```
 
-If you use another corpus, change the loader paths in `self_rag.ipynb`. Check the configured model identifiers are available to your account before running the model cells.
+- Actual LangGraph state machine; one to three retrieval attempts, at most one model call.
+- Hard service/version filters precede ranking; no silent fallback to another version.
+- Every displayed quote must occur in a retrieved passage with an allowed chunk identifier.
+- Optional model failure or invalid citation falls back to local excerpts and records the error.
+- A model's explicit no-evidence decision is respected.
+- No execution tools exist. Atlas does not modify servers, execute fixes, or confirm root causes.
 
-## Known implementation constraints
+Retrieval currently uses **lexical BM25 and metadata aliases, not vector embeddings**.
+Lexical coverage is a heuristic, not confidence in correctness. Even a real quote may be
+irrelevant, outdated or unsafe to follow. This implementation publishes excerpts rather than
+unverified generated summaries. The optional LLM selects evidence; its paraphrases are discarded.
 
-- The web fallback routes back to relevance grading with no explicit retry counter or terminal no-evidence branch. If web results remain irrelevant, execution can continue until LangGraph's recursion limit. The defined `no_relevant_docs` function is not wired into the compiled graph.
-- `workflows/2_worklow.ipynb` contains unresolved `bpb`/`bp` names, literal-string state updates, and a strike-rate calculation that needs review before using its output.
-- In `workflows/1_workflow.ipynb`, both graph nodes call `findc`; the separate `findc2` function is not connected.
-- The sentiment example uses a global review string rather than a general API input contract.
-- Notebook outputs can be stale. Restart the kernel when changing state schemas or model setup.
-- No server entry point, authentication layer, automated test suite, deployment configuration, or pinned environment is included.
+## Optional model selection
 
-These constraints are recorded to make reproduction honest; notebook source is unchanged by this documentation.
+Copy `.env.example` to `.env` and set the appropriate variables. Restart the server afterward.
+
+| Provider | Server configuration | Data flow |
+| --- | --- | --- |
+| Local extractive | None | No model/network request |
+| OpenAI | `OPENAI_API_KEY` and `OPENAI_MODEL` supporting Responses structured outputs | Sends question and retrieved passages to OpenAI; usage is recorded |
+| Ollama | `OLLAMA_MODEL`, with that model installed and Ollama running | Uses fixed `http://127.0.0.1:11434/api/chat` |
+
+Credentials are never returned to the browser. These adapters have mocked integration tests;
+live OpenAI and Ollama inference require your own configured provider and are not represented
+as verified by the offline test suite. Model selection can incur provider charges.
+
+## Tests and evaluation
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m pip check
+```
+
+Tests cover retrieval recovery, unknowns, version isolation, quote forgery, model failures,
+abstention, upload errors, persistence, local-origin boundaries, and provider request formats.
+The `requirements.lock` file pins the verified runtime and test environment. `pyproject.toml`
+also supports editable installation for development.
+
+With the server running, optional browser checks use an installed Chrome:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install playwright==1.64.1
+.\.venv\Scripts\python.exe scripts/check_ui.py
+```
+
+Set `ATLAS_CHROME` to the browser executable on other systems. This checks both retrieval
+paths, history, the library, evaluation and mobile overflow. It writes screenshots under
+`docs/screenshots/`. No Playwright-managed browser download is required.
+
+The Evaluation lab uses development fixtures that informed the implementation. It reports
+expected-source recall, expected-source citation rate and unknown-question abstention,
+**not production accuracy, factual correctness or proven incident resolution**. The complete
+unmodified demo scope is required. See [architecture and limitations](docs/ARCHITECTURE.md).
+
+## Project layout
+
+```text
+incident_atlas/
+  app.py          FastAPI API and loopback workspace boundary
+  engine.py       Bounded LangGraph retrieval/recovery workflow
+  retrieval.py    BM25, spelling variants and excerpt selection
+  providers.py    Optional server-side OpenAI / Ollama adapters
+  store.py        SQLite documents, chunks and evidence snapshots
+  evaluation.py   Paired fixture evaluation and demo seeding
+  demo/           Synthetic runbooks and labeled development cases
+  static/         Responsive browser workbench; no frontend build step
+tests/            Backend, API and mocked-provider tests
+scripts/          Real-browser smoke check
+self_rag.ipynb    Original exploratory notebook
+workflows/        Original LangGraph learning notebooks
+```
+
+## Operational scope
+
+Use redacted, trusted local documents. The app binds to loopback and includes Host/Origin
+checks, a per-process mutation token, safe text rendering and a same-origin CSP. It is a
+single-user local tool, with no account authentication, encrypted storage or execution sandbox
+for hostile PDFs. Do not expose it as a public or shared service. Run snapshots retain source
+text after a document is removed; the UI does not yet provide per-run retention controls.
+
+Meaningful next improvements require evidence: independently labeled real incidents,
+held-out evaluation, semantic retrieval/reranking comparisons, document supersession and
+conflict detection, then structured telemetry ingestion. Automatic remediation would need
+a separate, explicitly authorized execution system.
