@@ -1,5 +1,9 @@
 # Incident Atlas
 
+**Stack:** Python, FastAPI, LangGraph, BM25, SQLite, JavaScript, pytest.
+
+**Verified:** Recovery cited the expected runbook in 11 of 11 answerable cases, compared with 7 of 11 for the baseline, on a 14-case synthetic development set. The remaining three cases withheld an answer for insufficient evidence. The application includes 32 automated tests.
+
 **An inspectable incident-response evidence assistant for backend teams.**
 
 An engineer sees HTTP 503s after a release, pool checkout timeouts, or an event arriving twice.
